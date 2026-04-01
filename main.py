@@ -13,13 +13,31 @@ GMAIL_APP_PASSWORD = os.environ["GMAIL_APP_PASSWORD"]
 
 SITES = ["linkedin", "indeed", "glassdoor", "zip_recruiter"]
 
+# Each base role is paired with nonprofit/university employer contexts.
+# We fetch more candidates than needed so the filter can trim to 25.
 SEARCH_CONFIGS = [
-    {"term": "software engineer",           "count": 8},
-    {"term": "data scientist",              "count": 5},
-    {"term": "machine learning engineer",   "count": 5},
-    {"term": "data analyst",               "count": 4},
-    {"term": "data engineer",              "count": 4},
+    {"term": "software engineer university nonprofit",         "count": 15},
+    {"term": "data scientist university research foundation",  "count": 15},
+    {"term": "machine learning engineer nonprofit research",   "count": 10},
+    {"term": "data analyst nonprofit university",              "count": 10},
+    {"term": "data engineer nonprofit research institute",     "count": 10},
 ]
+
+# Company name substrings that indicate a 501(c)(3) / mission-driven employer.
+NONPROFIT_KEYWORDS = [
+    "university", "college", "institute", "institution",
+    "foundation", "research", "health system", "hospital",
+    "medical center", "clinic", "nonprofit", "non-profit",
+    "association", "society", "council", "alliance",
+    "museum", "library", "academy", "school",
+    "ngo", "charity", "trust", "fund",
+]
+
+
+def is_nonprofit(company: str) -> bool:
+    """Return True if the company name suggests a 501(c)(3) / mission-driven org."""
+    name = company.lower()
+    return any(kw in name for kw in NONPROFIT_KEYWORDS)
 
 
 def fetch_jobs() -> pd.DataFrame:
@@ -47,8 +65,13 @@ def fetch_jobs() -> pd.DataFrame:
 
     combined = pd.concat(all_jobs, ignore_index=True)
     combined = combined.drop_duplicates(subset=["job_url"])
-    combined = combined.head(25)
-    return combined
+
+    # Keep only nonprofit / university / research employers
+    mask = combined["company"].fillna("").apply(is_nonprofit)
+    filtered = combined[mask].reset_index(drop=True)
+    print(f"  After nonprofit filter: {len(filtered)} of {len(combined)} jobs kept")
+
+    return filtered.head(25)
 
 
 def build_html(jobs: pd.DataFrame) -> str:
@@ -80,7 +103,7 @@ def build_html(jobs: pd.DataFrame) -> str:
 <body style="font-family:Arial,sans-serif;max-width:950px;margin:0 auto;padding:24px;color:#1e293b;">
   <h2 style="margin-bottom:4px;">Daily Job Listings &mdash; {today}</h2>
   <p style="color:#64748b;margin-top:4px;">
-    {len(jobs)} remote roles across Software Engineering, Data Science, ML/AI, Data Analytics, and Data Engineering.
+    {len(jobs)} remote roles from universities, nonprofits, research foundations, and 501(c)(3) organizations across Software Engineering, Data Science, ML/AI, Data Analytics, and Data Engineering.
   </p>
   <table style="width:100%;border-collapse:collapse;margin-top:16px;font-size:14px;">
     <thead>
@@ -95,7 +118,7 @@ def build_html(jobs: pd.DataFrame) -> str:
     <tbody>{rows}
     </tbody>
   </table>
-  <p style="color:#94a3b8;font-size:12px;margin-top:24px;">Sent by jobs-sender &bull; Remote roles only &bull; US-based listings</p>
+  <p style="color:#94a3b8;font-size:12px;margin-top:24px;">Sent by jobs-sender &bull; Remote roles only &bull; US-based listings &bull; Universities, nonprofits &amp; 501(c)(3) orgs</p>
 </body>
 </html>"""
 
