@@ -1,15 +1,12 @@
 import os
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from datetime import date
 
 import pandas as pd
 from jobspy import scrape_jobs
 
 RECIPIENT_EMAIL = "pratyusharavuri21@gmail.com"
-SENDER_EMAIL = os.environ["GMAIL_USER"]
-GMAIL_APP_PASSWORD = os.environ["GMAIL_APP_PASSWORD"]
+SENDER_EMAIL = "jobs-sender@pratyusha.dev"
+SENDGRID_API_KEY = os.environ["SENDGRID_API_KEY"]
 
 SITES = ["linkedin", "indeed", "glassdoor", "zip_recruiter"]
 
@@ -145,17 +142,30 @@ def build_html(jobs: pd.DataFrame) -> str:
 
 
 def send_email(html: str, job_count: int) -> None:
+    import urllib.request
+    import json
+
     subject = f"Daily Jobs ({job_count} listings) — {date.today().strftime('%b %d, %Y')}"
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"]    = SENDER_EMAIL
-    msg["To"]      = RECIPIENT_EMAIL
-    msg.attach(MIMEText(html, "html"))
+    payload = json.dumps({
+        "personalizations": [{"to": [{"email": RECIPIENT_EMAIL}]}],
+        "from": {"email": SENDER_EMAIL},
+        "subject": subject,
+        "content": [{"type": "text/html", "value": html}],
+    }).encode()
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
-        server.sendmail(SENDER_EMAIL, RECIPIENT_EMAIL, msg.as_string())
+    req = urllib.request.Request(
+        "https://api.sendgrid.com/v3/mail/send",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {SENDGRID_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req) as resp:
+        if resp.status not in (200, 202):
+            raise RuntimeError(f"SendGrid error: {resp.status}")
 
 
 def main() -> None:
