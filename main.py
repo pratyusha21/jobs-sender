@@ -34,10 +34,23 @@ NONPROFIT_KEYWORDS = [
 ]
 
 
-def is_nonprofit(company: str) -> bool:
-    """Return True if the company name suggests a 501(c)(3) / mission-driven org."""
+DESCRIPTION_INDICATORS = [
+    "501(c)(3)", "501c3", "501 c 3",
+    "nonprofit", "non-profit", "not-for-profit",
+    "tax-exempt", "tax exempt",
+    "mission-driven", "mission driven",
+    "public benefit", "charitable organization",
+    "ngo", "non-governmental",
+]
+
+
+def is_nonprofit(company: str, description: str = "") -> bool:
+    """Return True if the company name OR job description signals a 501(c)(3) / mission-driven org."""
     name = company.lower()
-    return any(kw in name for kw in NONPROFIT_KEYWORDS)
+    if any(kw in name for kw in NONPROFIT_KEYWORDS):
+        return True
+    desc = description.lower()
+    return any(ind in desc for ind in DESCRIPTION_INDICATORS)
 
 
 def fetch_jobs() -> pd.DataFrame:
@@ -66,8 +79,16 @@ def fetch_jobs() -> pd.DataFrame:
     combined = pd.concat(all_jobs, ignore_index=True)
     combined = combined.drop_duplicates(subset=["job_url"])
 
-    # Keep only nonprofit / university / research employers
-    mask = combined["company"].fillna("").apply(is_nonprofit)
+    # Keep only nonprofit / university / research employers.
+    # Check both company name and job description so orgs with Inc./LLC suffixes
+    # (e.g. "RAND Corporation", "SRI International Inc.") are still caught.
+    mask = combined.apply(
+        lambda row: is_nonprofit(
+            str(row.get("company") or ""),
+            str(row.get("description") or ""),
+        ),
+        axis=1,
+    )
     filtered = combined[mask].reset_index(drop=True)
     print(f"  After nonprofit filter: {len(filtered)} of {len(combined)} jobs kept")
 
