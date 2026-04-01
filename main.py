@@ -5,7 +5,7 @@ import pandas as pd
 from jobspy import scrape_jobs
 
 RECIPIENT_EMAIL = "pratyusharavuri21@gmail.com"
-SENDER_EMAIL = "jobs-sender@pratyusha.dev"
+SENDER_EMAIL = "pratyusharavuri21@gmail.com"
 SENDGRID_API_KEY = os.environ["SENDGRID_API_KEY"]
 
 SITES = ["linkedin", "indeed", "glassdoor", "zip_recruiter"]
