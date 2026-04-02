@@ -13,11 +13,11 @@ SITES = ["linkedin", "indeed", "glassdoor", "zip_recruiter"]
 # Each base role is paired with nonprofit/university employer contexts.
 # We fetch more candidates than needed so the filter can trim to 25.
 SEARCH_CONFIGS = [
-    {"term": "software engineer university nonprofit",         "count": 15},
-    {"term": "data scientist university research foundation",  "count": 15},
-    {"term": "machine learning engineer nonprofit research",   "count": 10},
-    {"term": "data analyst nonprofit university",              "count": 10},
-    {"term": "data engineer nonprofit research institute",     "count": 10},
+    {"term": "junior software engineer university nonprofit",          "count": 20},
+    {"term": "associate data scientist university research",           "count": 20},
+    {"term": "entry level machine learning engineer nonprofit",        "count": 15},
+    {"term": "data analyst entry level nonprofit university",          "count": 15},
+    {"term": "data engineer associate nonprofit research institute",   "count": 15},
 ]
 
 # Company name substrings that indicate a 501(c)(3) / mission-driven employer.
@@ -29,6 +29,35 @@ NONPROFIT_KEYWORDS = [
     "museum", "library", "academy", "school",
     "ngo", "charity", "trust", "fund",
 ]
+
+
+# Job title prefixes/keywords that indicate senior, PhD-level, or postdoc roles to exclude.
+EXCLUDE_TITLE_KEYWORDS = [
+    "postdoc", "post-doc", "post doc", "post doctoral", "postdoctoral",
+    "senior", "sr.", "lead", "principal", "staff", "director", "manager",
+    "head of", "vp ", "vice president", "chief", "fellow",
+    "phd", "ph.d",
+]
+
+# Description phrases that signal PhD required or 5+ years experience.
+EXCLUDE_DESCRIPTION_PHRASES = [
+    "ph.d. required", "phd required", "doctorate required",
+    "phd preferred", "ph.d preferred",
+    "5+ years", "6+ years", "7+ years", "8+ years", "10+ years",
+    "5 or more years", "minimum 5 years", "at least 5 years",
+    "postdoctoral", "post-doctoral",
+]
+
+
+def is_entry_level(title: str, description: str = "") -> bool:
+    """Return True if the job is suitable for someone with a Masters and ~2 years experience."""
+    t = title.lower()
+    d = description.lower()
+    if any(kw in t for kw in EXCLUDE_TITLE_KEYWORDS):
+        return False
+    if any(phrase in d for phrase in EXCLUDE_DESCRIPTION_PHRASES):
+        return False
+    return True
 
 
 DESCRIPTION_INDICATORS = [
@@ -89,6 +118,17 @@ def fetch_jobs() -> pd.DataFrame:
     filtered = combined[mask].reset_index(drop=True)
     print(f"  After nonprofit filter: {len(filtered)} of {len(combined)} jobs kept")
 
+    # Drop senior / PhD / postdoc roles — keep entry-to-mid level (0-2 yrs, Masters OK)
+    level_mask = filtered.apply(
+        lambda row: is_entry_level(
+            str(row.get("title") or ""),
+            str(row.get("description") or ""),
+        ),
+        axis=1,
+    )
+    filtered = filtered[level_mask].reset_index(drop=True)
+    print(f"  After experience filter: {len(filtered)} jobs kept")
+
     return filtered.head(25)
 
 
@@ -136,7 +176,7 @@ def build_html(jobs: pd.DataFrame) -> str:
     <tbody>{rows}
     </tbody>
   </table>
-  <p style="color:#94a3b8;font-size:12px;margin-top:24px;">Sent by jobs-sender &bull; Remote roles only &bull; US-based listings &bull; Universities, nonprofits &amp; 501(c)(3) orgs</p>
+  <p style="color:#94a3b8;font-size:12px;margin-top:24px;">Sent by jobs-sender &bull; Remote roles only &bull; US-based &bull; Universities, nonprofits &amp; 501(c)(3) orgs &bull; Entry/mid-level &bull; No PhD or postdoc roles</p>
 </body>
 </html>"""
 
