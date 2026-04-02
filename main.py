@@ -33,10 +33,25 @@ NONPROFIT_KEYWORDS = [
 
 # Job title prefixes/keywords that indicate senior, PhD-level, or postdoc roles to exclude.
 EXCLUDE_TITLE_KEYWORDS = [
+    # Seniority
     "postdoc", "post-doc", "post doc", "post doctoral", "postdoctoral",
     "senior", "sr.", "lead", "principal", "staff", "director", "manager",
     "head of", "vp ", "vice president", "chief", "fellow",
     "phd", "ph.d",
+    # Academic / faculty roles
+    "professor", "faculty", "lecturer", "instructor", "adjunct",
+    "visiting scholar", "research chair", "tenure", "provost", "dean",
+    "assistant professor", "associate professor",
+]
+
+# CS-related keywords — at least one must appear in the title
+CS_TITLE_KEYWORDS = [
+    "software", "engineer", "developer", "data", "analyst", "scientist",
+    "machine learning", "ml ", "ai ", "artificial intelligence",
+    "backend", "frontend", "front-end", "back-end", "full stack", "fullstack",
+    "devops", "cloud", "platform", "infrastructure", "sre", "site reliability",
+    "computer", "programmer", "architect", "database", "etl", "pipeline",
+    "nlp", "deep learning", "analytics", "bi ", "business intelligence",
 ]
 
 # Description phrases that signal PhD required or 5+ years experience.
@@ -50,12 +65,14 @@ EXCLUDE_DESCRIPTION_PHRASES = [
 
 
 def is_entry_level(title: str, description: str = "") -> bool:
-    """Return True if the job is suitable for someone with a Masters and ~2 years experience."""
+    """Return True if the job is suitable for someone with a Masters in CS and ~2 years experience."""
     t = title.lower()
     d = description.lower()
     if any(kw in t for kw in EXCLUDE_TITLE_KEYWORDS):
         return False
     if any(phrase in d for phrase in EXCLUDE_DESCRIPTION_PHRASES):
+        return False
+    if not any(kw in t for kw in CS_TITLE_KEYWORDS):
         return False
     return True
 
