@@ -46,15 +46,27 @@ EXCLUDE_TITLE_KEYWORDS = [
 
 # CS-related keywords — at least one must appear in the title
 CS_TITLE_KEYWORDS = [
-    "software engineer", "software developer", "software architect",
-    "data engineer", "data scientist", "data analyst", "data analyst",
-    "machine learning", "ml engineer", "ai engineer", "artificial intelligence",
-    "backend", "frontend", "front-end", "back-end", "full stack", "fullstack",
-    "devops", "cloud engineer", "platform engineer", "infrastructure engineer",
-    "site reliability", "sre", "computer scientist",
-    "nlp engineer", "deep learning", "business intelligence", "bi developer",
-    "database engineer", "etl developer", "analytics engineer",
-    "python developer", "java developer", "web developer",
+    # Software engineering
+    "software", "developer", "programmer", "coder",
+    "backend", "front-end", "frontend", "back-end", "full stack", "fullstack",
+    "web developer", "web engineer", "mobile developer", "ios developer", "android developer",
+    # Data / analytics
+    "data engineer", "data scientist", "data analyst", "data architect",
+    "analytics engineer", "business intelligence", "bi developer", "bi analyst",
+    "etl", "pipeline engineer",
+    # ML / AI
+    "machine learning", "deep learning", "artificial intelligence",
+    "ai engineer", "ml engineer", "nlp", "computer vision",
+    # Infrastructure / platform
+    "devops", "devsecops", "site reliability", "sre",
+    "cloud", "platform engineer", "infrastructure engineer",
+    "systems engineer", "systems developer",
+    # Security / other CS
+    "cybersecurity", "security engineer", "security analyst", "security developer",
+    "database", "dba", "sql developer",
+    "computer scientist", "it analyst", "it specialist",
+    "qa engineer", "quality assurance engineer", "automation engineer",
+    "api developer", "integration engineer",
 ]
 
 # Description phrases that signal PhD required or 5+ years experience.
