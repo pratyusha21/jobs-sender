@@ -59,11 +59,17 @@ CS_TITLE_KEYWORDS = [
 
 # Description phrases that signal PhD required or 5+ years experience.
 EXCLUDE_DESCRIPTION_PHRASES = [
+    # PhD requirements
     "ph.d. required", "phd required", "doctorate required",
     "phd preferred", "ph.d preferred",
-    "5+ years", "6+ years", "7+ years", "8+ years", "10+ years",
-    "5 or more years", "minimum 5 years", "at least 5 years",
     "postdoctoral", "post-doctoral",
+    # 3+ years experience
+    "3+ years", "4+ years", "5+ years", "6+ years", "7+ years", "8+ years", "10+ years",
+    "3 or more years", "4 or more years", "5 or more years",
+    "minimum 3 years", "minimum 4 years", "minimum 5 years",
+    "at least 3 years", "at least 4 years", "at least 5 years",
+    "3 years of experience", "4 years of experience", "5 years of experience",
+    "three years of experience", "four years of experience", "five years of experience",
 ]
 
 
